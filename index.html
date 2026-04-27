@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas 全螢幕影像顯示</title>
+    <style>
+        /* 移除預設邊距，確保畫布填滿螢幕 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            background-color: #e7c6ff;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* 檔案選擇器樣式（僅供測試載入影像） */
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="controls">
+        <input type="file" id="imageLoader" accept="image/*">
+    </div>
+    <canvas id="mainCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const imageLoader = document.getElementById('imageLoader');
+        let currentImage = null;
+
+        // 初始化畫布大小
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            draw();
+        }
+
+        // 繪製函式
+        function draw() {
+            // 1. 填滿背景顏色 #e7c6ff
+            ctx.fillStyle = '#e7c6ff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. 如果有影像，則繪製在中間
+            if (currentImage) {
+                // 計算影像寬高 (全螢幕寬高的 50%)
+                const targetWidth = canvas.width * 0.5;
+                const targetHeight = canvas.height * 0.5;
+
+                // 計算置中座標
+                const x = (canvas.width - targetWidth) / 2;
+                const y = (canvas.height - targetHeight) / 2;
+
+                ctx.drawImage(currentImage, x, y, targetWidth, targetHeight);
+            }
+        }
+
+        // 處理影像載入
+        imageLoader.addEventListener('change', (e) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    currentImage = img;
+                    draw();
+                };
+                img.src = event.target.result;
+            };
+            if (e.target.files[0]) {
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        // 監聽視窗縮放，保持全螢幕
+        window.addEventListener('resize', initCanvas);
+
+        // 執行初始化
+        initCanvas();
+    </script>
+</body>
+</html>
